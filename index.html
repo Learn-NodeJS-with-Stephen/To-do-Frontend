@@ -1,0 +1,193 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Tasks Manager</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-gray-100 min-h-screen flex items-center justify-center">
+  <div class="max-w-2xl w-full bg-white p-6 rounded-lg shadow-md">
+    <h1 class="text-2xl font-bold mb-4 text-center">Tasks Manager</h1>
+
+    <!-- Task Form -->
+    <div class="mb-6">
+      <h2 class="text-lg font-semibold mb-2">Add a New Task</h2>
+      <form id="taskForm" class="flex gap-4">
+        <input
+          type="text"
+          id="taskTitle"
+          placeholder="Task Title"
+          class="w-full p-2 border rounded-md"
+          required
+        />
+        <button
+          type="submit"
+          class="bg-blue-500 text-white px-4 py-2 rounded-md hover:bg-blue-600"
+        >
+          Add Task
+        </button>
+      </form>
+    </div>
+
+    <!-- Task Actions -->
+    <div class="flex flex-wrap gap-4 mb-6">
+      <button
+        id="fetchAllTasks"
+        class="bg-gray-500 text-white px-4 py-2 rounded-md hover:bg-gray-600"
+      >
+        View All Tasks
+      </button>
+      <button
+        id="fetchCompletedTasks"
+        class="bg-green-500 text-white px-4 py-2 rounded-md hover:bg-green-600"
+      >
+        View Completed Tasks
+      </button>
+      <button
+        id="fetchUnfinishedTasks"
+        class="bg-yellow-500 text-white px-4 py-2 rounded-md hover:bg-yellow-600"
+      >
+        View Unfinished Tasks
+      </button>
+      <button
+        id="deleteCompletedTasks"
+        class="bg-red-500 text-white px-4 py-2 rounded-md hover:bg-red-600"
+      >
+        Delete Completed Tasks
+      </button>
+      <button
+        id="deleteAllTasks"
+        class="bg-red-700 text-white px-4 py-2 rounded-md hover:bg-red-800"
+      >
+        Delete All Tasks
+      </button>
+    </div>
+
+    <!-- Task List -->
+    <div id="taskList">
+      <h2 class="text-lg font-semibold mb-2">Tasks</h2>
+      <ul class="space-y-4" id="tasksContainer"></ul>
+    </div>
+  </div>
+
+  <script>
+    const API_URL = "http://localhost:3500/tasks"; // Update with your server URL
+
+    const taskForm = document.getElementById("taskForm");
+    const taskTitle = document.getElementById("taskTitle");
+    const tasksContainer = document.getElementById("tasksContainer");
+
+    const fetchAllTasks = document.getElementById("fetchAllTasks");
+    const fetchCompletedTasks = document.getElementById("fetchCompletedTasks");
+    const fetchUnfinishedTasks = document.getElementById("fetchUnfinishedTasks");
+    const deleteCompletedTasks = document.getElementById("deleteCompletedTasks");
+    const deleteAllTasks = document.getElementById("deleteAllTasks");
+
+    // Fetch and render tasks
+    const fetchTasks = async (endpoint = "") => {
+      const response = await fetch(`${API_URL}${endpoint}`);
+      const tasks = await response.json();
+      renderTasks(tasks);
+    };
+
+    // Render tasks to the UI
+    const renderTasks = (tasks) => {
+      tasksContainer.innerHTML = "";
+      if (tasks.length === 0) {
+        tasksContainer.innerHTML =
+          '<p class="text-gray-500">No tasks available.</p>';
+        return;
+      }
+      console.log("task: ", tasks);
+
+      for(const task of tasks.data){
+        const taskElement = document.createElement("li");
+        taskElement.className =
+          "p-4 border rounded-md shadow-md flex justify-between items-center " +
+          (task.completed ? "bg-green-100" : "bg-white");
+
+        taskElement.innerHTML = `
+          <div>
+            <h3 class="text-lg font-medium">${task.title}</h3>
+            <p class="text-sm text-gray-600">ID: ${task.id}</p>
+          </div>
+          <div class="flex gap-2">
+            ${
+              !task.completed
+                ? `<button
+                  class="bg-green-500 text-white px-3 py-1 rounded-md hover:bg-green-600"
+                  onclick="completeTask(${task.id})"
+                >
+                  Complete
+                </button>`
+                : ""
+            }
+            <button
+              class="bg-red-500 text-white px-3 py-1 rounded-md hover:bg-red-600"
+              onclick="deleteTask(${task.id})"
+            >
+              Delete
+            </button>
+          </div>
+        `;
+        tasksContainer.appendChild(taskElement);
+      };
+    };
+
+    // Add a new task
+    taskForm.addEventListener("submit", async (e) => {
+      e.preventDefault();
+      const response = await fetch(API_URL, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ title: taskTitle.value }),
+      });
+      if (response.ok) {
+        taskTitle.value = "";
+        fetchTasks();
+      }
+    });
+
+    // Complete a task
+    const completeTask = async (id) => {
+      await fetch(`${API_URL}/${id}`, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ completed: true }),
+      });
+      fetchTasks();
+    };
+
+    // Delete a task
+    const deleteTask = async (id) => {
+      await fetch(`${API_URL}/${id}`, { method: "DELETE" });
+      fetchTasks();
+    };
+
+    // Delete all completed tasks
+    deleteCompletedTasks.addEventListener("click", async () => {
+      await fetch(`${API_URL}/completed`, { method: "DELETE" });
+      fetchTasks();
+    });
+
+    // Delete all tasks
+    deleteAllTasks.addEventListener("click", async () => {
+      await fetch(API_URL, { method: "DELETE" });
+      fetchTasks();
+    });
+
+    // Fetch all tasks
+    fetchAllTasks.addEventListener("click", () => fetchTasks());
+    fetchCompletedTasks.addEventListener("click", () =>
+      fetchTasks("/completed")
+    );
+    fetchUnfinishedTasks.addEventListener("click", () =>
+      fetchTasks("/unfinished")
+    );
+
+    // Initial fetch
+    fetchTasks();
+  </script>
+</body>
+</html>
