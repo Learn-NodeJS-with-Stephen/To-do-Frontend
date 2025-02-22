@@ -1,122 +1,143 @@
 <!DOCTYPE html>
 <html lang="en">
-<head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Tasks Manager</title>
-  <script src="https://cdn.tailwindcss.com"></script>
-</head>
-<body class="bg-gray-100 min-h-screen flex items-center justify-center">
-  <div class="max-w-2xl w-full bg-white p-6 rounded-lg shadow-md">
-    <h1 class="text-2xl font-bold mb-4 text-center">Tasks Manager</h1>
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Tasks Manager</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="./style.css" />
+  </head>
+  <body class="bg-gray-100 min-h-screen flex items-center justify-center">
+    <div
+      class="max-w-4xl w-full bg-white p-8 rounded-lg shadow-2xl transform transition-all duration-300 hover:scale-105"
+    >
+      <h1 class="text-3xl font-bold mb-6 text-center text-white">
+        Tasks Manager
+      </h1>
 
-    <!-- Task Form -->
-    <div class="mb-6">
-      <h2 class="text-lg font-semibold mb-2">Add a New Task</h2>
-      <form id="taskForm" class="flex gap-4">
-        <input
-          type="text"
-          id="taskTitle"
-          placeholder="Task Title"
-          class="w-full p-2 border rounded-md"
-          required
-        />
+      <!-- Task Form -->
+      <div class="mb-8">
+        <h2 class="text-xl font-semibold mb-4 text-white">Add a New Task</h2>
+        <form id="taskForm" class="flex gap-4 flex-col">
+          <input
+            type="text"
+            id="taskTitle"
+            placeholder="Task Title"
+            class="w-full p-3 border-2 border-gray-200 rounded-lg focus:border-blue-500 focus:ring-2 focus:ring-blue-200 transition-all"
+            required
+          />
+          <textarea
+            id="taskDescription"
+            placeholder="Task Description"
+            spellcheck="true"
+            rows="4"
+            class="w-full p-3 border-2 border-gray-200 rounded-lg focus:border-blue-500 focus:ring-2 focus:ring-blue-200 transition-all"
+            required
+          ></textarea>
+          <button
+            type="submit"
+            class="bg-blue-600 text-white px-6 py-3 rounded-lg hover:bg-blue-700 focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transition-all"
+          >
+            Add Task
+          </button>
+        </form>
+      </div>
+
+      <!-- Task Actions -->
+      <div class="flex flex-wrap gap-4 mb-8">
         <button
-          type="submit"
-          class="bg-blue-500 text-white px-4 py-2 rounded-md hover:bg-blue-600"
+          id="fetchAllTasks"
+          class="bg-gray-600 text-white px-6 py-3 rounded-lg hover:bg-gray-700 focus:ring-2 focus:ring-gray-500 focus:ring-offset-2 transition-all"
         >
-          Add Task
+          View All Tasks
         </button>
-      </form>
+        <button
+          id="fetchCompletedTasks"
+          class="bg-green-600 text-white px-6 py-3 rounded-lg hover:bg-green-700 focus:ring-2 focus:ring-green-500 focus:ring-offset-2 transition-all"
+        >
+          View Completed Tasks
+        </button>
+        <button
+          id="fetchUnfinishedTasks"
+          class="bg-yellow-500 text-white px-6 py-3 rounded-lg hover:bg-yellow-600 focus:ring-2 focus:ring-yellow-400 focus:ring-offset-2 transition-all"
+        >
+          View Unfinished Tasks
+        </button>
+        <button
+          id="deleteCompletedTasks"
+          class="bg-red-600 text-white px-6 py-3 rounded-lg hover:bg-red-700 focus:ring-2 focus:ring-red-500 focus:ring-offset-2 transition-all"
+        >
+          Delete Completed Tasks
+        </button>
+        <button
+          id="deleteAllTasks"
+          class="bg-red-800 text-white px-6 py-3 rounded-lg hover:bg-red-900 focus:ring-2 focus:ring-red-700 focus:ring-offset-2 transition-all"
+        >
+          Delete All Tasks
+        </button>
+      </div>
+
+      <!-- Task List -->
+      <div id="taskList">
+        <h2 class="text-xl font-semibold mb-4 text-gray-700">Tasks</h2>
+        <ul class="space-y-4" id="tasksContainer"></ul>
+      </div>
     </div>
 
-    <!-- Task Actions -->
-    <div class="flex flex-wrap gap-4 mb-6">
-      <button
-        id="fetchAllTasks"
-        class="bg-gray-500 text-white px-4 py-2 rounded-md hover:bg-gray-600"
-      >
-        View All Tasks
-      </button>
-      <button
-        id="fetchCompletedTasks"
-        class="bg-green-500 text-white px-4 py-2 rounded-md hover:bg-green-600"
-      >
-        View Completed Tasks
-      </button>
-      <button
-        id="fetchUnfinishedTasks"
-        class="bg-yellow-500 text-white px-4 py-2 rounded-md hover:bg-yellow-600"
-      >
-        View Unfinished Tasks
-      </button>
-      <button
-        id="deleteCompletedTasks"
-        class="bg-red-500 text-white px-4 py-2 rounded-md hover:bg-red-600"
-      >
-        Delete Completed Tasks
-      </button>
-      <button
-        id="deleteAllTasks"
-        class="bg-red-700 text-white px-4 py-2 rounded-md hover:bg-red-800"
-      >
-        Delete All Tasks
-      </button>
-    </div>
+    <script>
+      const API_URL = "http://localhost:3500/tasks"; // Update with your server URL
 
-    <!-- Task List -->
-    <div id="taskList">
-      <h2 class="text-lg font-semibold mb-2">Tasks</h2>
-      <ul class="space-y-4" id="tasksContainer"></ul>
-    </div>
-  </div>
+      const taskForm = document.getElementById("taskForm");
+      const taskTitle = document.getElementById("taskTitle");
+      const taskDescription = document.getElementById("taskDescription");
+      const tasksContainer = document.getElementById("tasksContainer");
 
-  <script>
-    const API_URL = "http://localhost:3500/tasks"; // Update with your server URL
+      const fetchAllTasks = document.getElementById("fetchAllTasks");
+      const fetchCompletedTasks = document.getElementById(
+        "fetchCompletedTasks"
+      );
+      const fetchUnfinishedTasks = document.getElementById(
+        "fetchUnfinishedTasks"
+      );
+      const deleteCompletedTasks = document.getElementById(
+        "deleteCompletedTasks"
+      );
+      const deleteAllTasks = document.getElementById("deleteAllTasks");
 
-    const taskForm = document.getElementById("taskForm");
-    const taskTitle = document.getElementById("taskTitle");
-    const tasksContainer = document.getElementById("tasksContainer");
+      // Fetch and render tasks
+      const fetchTasks = async (endpoint = "") => {
+        const response = await fetch(`${API_URL}${endpoint}`);
 
-    const fetchAllTasks = document.getElementById("fetchAllTasks");
-    const fetchCompletedTasks = document.getElementById("fetchCompletedTasks");
-    const fetchUnfinishedTasks = document.getElementById("fetchUnfinishedTasks");
-    const deleteCompletedTasks = document.getElementById("deleteCompletedTasks");
-    const deleteAllTasks = document.getElementById("deleteAllTasks");
+        const tasks = await response.json();
+        renderTasks(tasks);
+      };
 
-    // Fetch and render tasks
-    const fetchTasks = async (endpoint = "") => {
-      const response = await fetch(`${API_URL}${endpoint}`);
-      const tasks = await response.json();
-      renderTasks(tasks);
-    };
+      // Render tasks to the UI
+      const renderTasks = (tasks) => {
+        tasksContainer.innerHTML = "";
+        if (tasks.length === 0) {
+          tasksContainer.innerHTML =
+            '<p class="text-gray-500 text-center">No tasks available.</p>';
+          return;
+        }
 
-    // Render tasks to the UI
-    const renderTasks = (tasks) => {
-      tasksContainer.innerHTML = "";
-      if (tasks.length === 0) {
-        tasksContainer.innerHTML =
-          '<p class="text-gray-500">No tasks available.</p>';
-        return;
-      }
-      console.log("task: ", tasks);
+        for (const task of tasks.data) {
+          const taskElement = document.createElement("li");
+          taskElement.className =
+            "p-6 border-2 border-gray-200 rounded-lg shadow-md flex justify-between items-center transition-all hover:shadow-lg " +
+            (task.completed ? "bg-green-50" : "bg-white");
 
-      for(const task of tasks.data){
-        const taskElement = document.createElement("li");
-        taskElement.className =
-          "p-4 border rounded-md shadow-md flex justify-between items-center " +
-          (task.completed ? "bg-green-100" : "bg-white");
-
-        taskElement.innerHTML = `
+          taskElement.innerHTML = `
           <div>
-            <h3 class="text-lg font-medium">${task.title}</h3>
-            <p class="text-sm text-gray-600">ID: ${task.id}</p>
+            <h3 class="text-lg font-medium text-gray-800">${task.title}</h3>
+            <h5 class="font-medium text-gray-600">${task.description}</h5>
+            <p class="text-sm text-gray-500">ID: ${task.id}</p>
           </div>
           <div class="flex gap-2">
             ${
               !task.completed
                 ? `<button
-                  class="bg-green-500 text-white px-3 py-1 rounded-md hover:bg-green-600"
+                  class="bg-green-500 text-white px-4 py-2 rounded-lg hover:bg-green-600 focus:ring-2 focus:ring-green-400 focus:ring-offset-2 transition-all"
                   onclick="completeTask(${task.id})"
                 >
                   Complete
@@ -124,70 +145,76 @@
                 : ""
             }
             <button
-              class="bg-red-500 text-white px-3 py-1 rounded-md hover:bg-red-600"
+              class="bg-red-500 text-white px-4 py-2 rounded-lg hover:bg-red-600 focus:ring-2 focus:ring-red-400 focus:ring-offset-2 transition-all"
               onclick="deleteTask(${task.id})"
             >
               Delete
             </button>
           </div>
         `;
-        tasksContainer.appendChild(taskElement);
+          tasksContainer.appendChild(taskElement);
+        }
       };
-    };
 
-    // Add a new task
-    taskForm.addEventListener("submit", async (e) => {
-      e.preventDefault();
-      const response = await fetch(API_URL, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ title: taskTitle.value }),
+      // Add a new task
+      taskForm.addEventListener("submit", async (e) => {
+        e.preventDefault();
+        const response = await fetch(API_URL, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            title: taskTitle.value,
+            description: taskDescription.value,
+          }),
+        });
+
+        console.log("response", response);
+        if (response.ok) {
+          taskTitle.value = "";
+          taskDescription.value = "";
+          fetchTasks();
+        }
       });
-      if (response.ok) {
-        taskTitle.value = "";
+
+      // Complete a task
+      const completeTask = async (id) => {
+        await fetch(`${API_URL}/${id}`, {
+          method: "PUT",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ completed: true }),
+        });
         fetchTasks();
-      }
-    });
+      };
 
-    // Complete a task
-    const completeTask = async (id) => {
-      await fetch(`${API_URL}/${id}`, {
-        method: "PUT",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ completed: true }),
+      // Delete a task
+      const deleteTask = async (id) => {
+        await fetch(`${API_URL}/${id}`, { method: "DELETE" });
+        fetchTasks();
+      };
+
+      // Delete all completed tasks
+      deleteCompletedTasks.addEventListener("click", async () => {
+        await fetch(`${API_URL}/completed`, { method: "DELETE" });
+        fetchTasks();
       });
+
+      // Delete all tasks
+      deleteAllTasks.addEventListener("click", async () => {
+        await fetch(API_URL, { method: "DELETE" });
+        fetchTasks();
+      });
+
+      // Fetch all tasks
+      fetchAllTasks.addEventListener("click", () => fetchTasks());
+      fetchCompletedTasks.addEventListener("click", () =>
+        fetchTasks("/completed")
+      );
+      fetchUnfinishedTasks.addEventListener("click", () =>
+        fetchTasks("/unfinished")
+      );
+
+      // Initial fetch
       fetchTasks();
-    };
-
-    // Delete a task
-    const deleteTask = async (id) => {
-      await fetch(`${API_URL}/${id}`, { method: "DELETE" });
-      fetchTasks();
-    };
-
-    // Delete all completed tasks
-    deleteCompletedTasks.addEventListener("click", async () => {
-      await fetch(`${API_URL}/completed`, { method: "DELETE" });
-      fetchTasks();
-    });
-
-    // Delete all tasks
-    deleteAllTasks.addEventListener("click", async () => {
-      await fetch(API_URL, { method: "DELETE" });
-      fetchTasks();
-    });
-
-    // Fetch all tasks
-    fetchAllTasks.addEventListener("click", () => fetchTasks());
-    fetchCompletedTasks.addEventListener("click", () =>
-      fetchTasks("/completed")
-    );
-    fetchUnfinishedTasks.addEventListener("click", () =>
-      fetchTasks("/unfinished")
-    );
-
-    // Initial fetch
-    fetchTasks();
-  </script>
-</body>
+    </script>
+  </body>
 </html>
